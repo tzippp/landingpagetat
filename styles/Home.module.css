@@ -1,0 +1,117 @@
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.hero {
+  text-align: center;
+  padding: 3rem 1rem 2rem 1rem;
+  background: #f7f6f3;
+}
+.hero h1 {
+  font-family: "Playfair Display", serif;
+  font-size: 2.8rem;
+  color: #232323;
+  margin-bottom: 1rem;
+}
+.hero p {
+  font-family: "Montserrat", sans-serif;
+  font-size: 1.3rem;
+  color: #444;
+}
+.cta {
+  background: #a3bffa;
+  color: #232323;
+  border: none;
+  padding: 1.1rem 2.2rem;
+  font-size: 1.25rem;
+  border-radius: 30px;
+  cursor: pointer;
+  margin-top: 1.7rem;
+  transition: background 0.2s;
+  font-family: "Montserrat", sans-serif;
+}
+.cta:hover {
+  background: #7f9cf5;
+}
+
+.ideas {
+  margin: 3rem 0 2rem 0;
+}
+.ideasGrid {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.carousel {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  padding-bottom: 1rem;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.carousel::-webkit-scrollbar {
+  height: 8px;
+  background: #eee;
+}
+.carousel::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+.ideaCard {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 1rem;
+  text-align: center;
+  width: 180px;
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+.ideaCard img {
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 0.5rem;
+}
+
+.testimonials {
+  margin: 3rem 0 2rem 0;
+  background: #f3f2ef;
+  border-radius: 16px;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+.testimonials blockquote {
+  font-style: italic;
+  margin: 1rem auto;
+  max-width: 500px;
+}
+.testimonials footer {
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.chat {
+  margin: 3rem 0 2rem 0;
+  text-align: center;
+}
+.chatPlaceholder {
+  margin: 1.5rem auto 0 auto;
+  padding: 2rem;
+  background: #e9e7e1;
+  border-radius: 12px;
+  color: #888;
+  max-width: 400px;
+}
+
+.footer {
+  margin-top: 3rem;
+  padding: 1.5rem 0 1rem 0;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #888;
+  background: none;
+}
