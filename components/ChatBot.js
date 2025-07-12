@@ -14,6 +14,20 @@ export default function ChatBot() {
   const [input, setInput] = useState("");
   const [showTooltip, setShowTooltip] = useState(true);
   const [hovered, setHovered] = useState(false);
+  const [userId, setUserId] = useState("");
+
+  // Generate unique userId on component mount
+  useEffect(() => {
+    const storedUserId = localStorage.getItem("chatUserId");
+    if (storedUserId) {
+      setUserId(storedUserId);
+    } else {
+      const newUserId =
+        "user_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem("chatUserId", newUserId);
+      setUserId(newUserId);
+    }
+  }, []);
 
   // Auto-open chat after 5 seconds for first-time visitors
   useEffect(() => {
@@ -29,16 +43,24 @@ export default function ChatBot() {
     if (open) setShowTooltip(false);
   }, [open]);
 
-  // Placeholder for saving chat data to MongoDB
+  // Save message to MongoDB
   const saveMessage = async (msg) => {
+    if (!userId) return;
+
     try {
+      const landingPage = window.location.pathname || "/";
       await fetch("/api/save-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: { ...msg, business: "tattoo" } }),
+        body: JSON.stringify({
+          userId,
+          message: { ...msg, business: "tattoo" },
+          landingPage,
+          consent: true,
+        }),
       });
     } catch (err) {
-      // Optionally handle error (e.g., show a notification)
+      console.error("Failed to save message:", err);
     }
   };
 

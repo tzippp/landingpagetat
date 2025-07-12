@@ -8,17 +8,42 @@ export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
-  const { userId, message, userName, email, phone, landingPage, consent } =
-    req.body;
-  if (!userId || !message || !consent) {
+  const {
+    userId,
+    message,
+    userName,
+    email,
+    phone,
+    landingPage,
+    consent,
+    archive,
+    delete: deleteChat,
+  } = req.body;
+  if (!userId || (!message && !archive && !deleteChat) || !consent) {
     return res
       .status(400)
-      .json({ error: "userId, message, and consent are required" });
+      .json({
+        error:
+          "userId, message, and consent are required (unless archiving or deleting)",
+      });
   }
   try {
     const client = await MongoClient.connect(uri);
     const db = client.db(dbName);
     const collection = db.collection(collectionName);
+    if (deleteChat) {
+      await collection.deleteOne({ userId });
+      client.close();
+      return res.status(200).json({ success: true, deleted: true });
+    }
+    if (archive) {
+      await collection.updateOne(
+        { userId },
+        { $set: { archived: true, updatedAt: new Date() } }
+      );
+      client.close();
+      return res.status(200).json({ success: true, archived: true });
+    }
     // Try to find an existing chat session for this user
     const existing = await collection.findOne({ userId });
     if (existing) {

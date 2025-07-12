@@ -17,6 +17,7 @@ export default async function handler(req, res) {
     if (landingPage && landingPage !== "all") {
       query.landingPage = landingPage;
     }
+    query.archived = { $ne: true };
     // Fetch all chat sessions (one per user)
     const chats = await collection
       .find(query)
