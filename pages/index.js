@@ -82,16 +82,32 @@ export default function Home() {
       {/* Testimonials Section */}
       <section className={styles.testimonials}>
         <h2>What Our Clients Say</h2>
-        <blockquote>
-          "Absolutely in love with my fine line tattoo! The detail is amazing
-          and the experience was so comfortable."
-          <footer>- Jamie</footer>
-        </blockquote>
-        <blockquote>
-          "I was nervous about my first tattoo, but the team made me feel at
-          ease. It turned out perfect!"
-          <footer>- Alex</footer>
-        </blockquote>
+        <div className={styles.testimonialGrid}>
+          <div className={styles.testimonialCard}>
+            <div className={styles.starsRow}>★★★★★</div>
+            <blockquote>
+              "Absolutely in love with my fine line tattoo! The detail is
+              amazing and it barely hurt at all."
+            </blockquote>
+            <footer>- Jamie</footer>
+          </div>
+          <div className={styles.testimonialCard}>
+            <div className={styles.starsRow}>★★★★★</div>
+            <blockquote>
+              "Zippora made me feel at ease and explained everything clearly.
+              The studio was spotless and relaxing."
+            </blockquote>
+            <footer>- Alex</footer>
+          </div>
+          <div className={styles.testimonialCard}>
+            <div className={styles.starsRow}>★★★★★</div>
+            <blockquote>
+              "This was my first tattoo and Zippora made the process so easy. I
+              love my delicate new design!"
+            </blockquote>
+            <footer>- Taylor</footer>
+          </div>
+        </div>
       </section>
 
       {/* Interactive Chat Placeholder */}
@@ -102,6 +118,28 @@ export default function Home() {
         </p>
         <div className={styles.chatPlaceholder}>
           [Interactive Chat Coming Soon]
+        </div>
+      </section>
+
+      {/* Artist Section */}
+      <section className={styles.artistSection}>
+        <h2>Meet Your Fine Line Tattoo Artist</h2>
+        <div className={styles.artistContent}>
+          <img
+            src="/images/giving-tattoo-artist.jpg"
+            alt="Zippora - Fine Line Tattoo Artist"
+            className={styles.artistImg}
+          />
+          <div className={styles.artistBio}>
+            <p>
+              Hi, I'm Zippora! I specialize in delicate, fine line tattoos that
+              are as unique as you are. My goal is to make every client feel
+              comfortable, heard, and thrilled with their new art. Whether it's
+              your first tattoo or your tenth, I'll guide you through every step
+              with care and artistry.
+            </p>
+            <div className={styles.artistName}>— Zippora</div>
+          </div>
         </div>
       </section>
 
@@ -131,17 +169,32 @@ export default function Home() {
             "flower-ankle-tattoo.jpeg",
             "dragonfly-toe-tattoo.jpg",
             "glitter-butterfly-tattoo.png",
+            "finger-letter-k-tattoo.jpg",
+            "flower-name-tattoo.jpg",
+            "hand-tattoo-breathe-symbol.jpg",
           ].map((img, idx) => (
             <img
               key={idx}
               src={`/images/${img}`}
               alt={img.replace(/[-_]/g, " ").replace(/\..+$/, "")}
-              className={
-                styles.portfolioImg +
-                (idx === 0 ? " " + styles.flowerArmAdjust : "")
-              }
+              className={styles.portfolioImg}
             />
           ))}
+        </div>
+      </section>
+
+      {/* Storefront Section */}
+      <section className={styles.storefrontSection}>
+        <h2 style={{ display: "none" }}>Storefront</h2>
+        <div className={styles.storefrontContent}>
+          <img
+            src="/images/red-carpet-luxury-spa-storefront.jpg"
+            alt="Red Carpet Luxury Spa Storefront"
+            className={styles.storefrontImg}
+          />
+          <div className={styles.storefrontCaption}>
+            Look for this storefront when you arrive!
+          </div>
         </div>
       </section>
 
