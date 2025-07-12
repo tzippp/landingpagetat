@@ -11,19 +11,50 @@ export default function AdminChats() {
   const [chats, setChats] = useState([]);
   const [expanded, setExpanded] = useState(null);
   const [landingPage, setLandingPage] = useState("all");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [replyText, setReplyText] = useState("");
   const [replyingTo, setReplyingTo] = useState(null);
   const [readChats, setReadChats] = useState({});
   const [archivedChats, setArchivedChats] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const chatsPerPage = 10;
+
   const [chatDetailCache, setChatDetailCache] = useState({});
   const [deletingChats, setDeletingChats] = useState({});
   const [archivingChats, setArchivingChats] = useState({});
   const [activeTab, setActiveTab] = useState("active");
   const [lastUpdateTime, setLastUpdateTime] = useState(new Date());
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [lastMessageCount, setLastMessageCount] = useState(0);
+
+  // Sound notification function
+  const playNotificationSound = () => {
+    try {
+      // Create a simple beep sound using Web Audio API
+      const audioContext = new (window.AudioContext ||
+        window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      // Create a cute notification sound
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(1000, audioContext.currentTime + 0.1);
+      oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.2);
+
+      gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.01,
+        audioContext.currentTime + 0.3
+      );
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    } catch (error) {
+      console.log("Sound notification failed:", error);
+    }
+  };
 
   // Define services and landing pages
   const serviceLandingPages = {
@@ -56,11 +87,13 @@ export default function AdminChats() {
 
   // Define source options
   const sourceOptions = [
-    { value: "", label: "All Sources (show all chats)" },
+    { value: "", label: "All Sources" },
     { value: "web", label: "Web Chat" },
     { value: "google", label: "Google" },
     { value: "facebook", label: "Facebook" },
     { value: "instagram", label: "Instagram" },
+    { value: "tiktok", label: "TikTok" },
+    { value: "referral", label: "Referral" },
     { value: "unknown", label: "Unknown Source" },
   ];
 
@@ -86,17 +119,41 @@ export default function AdminChats() {
   });
 
   const landingPageDropdownOptions = [
-    { value: "", label: "All Services (show all chats)" },
+    { value: "", label: "All Services" },
     ...allServices.map((service) => ({ value: service, label: service })),
   ];
 
+  // Add variant filter
+  const [variantFilter, setVariantFilter] = useState("");
+
+  const variantOptions = [
+    { value: "", label: "All Variants" },
+    { value: "A", label: "Variant A" },
+    { value: "B", label: "Variant B" },
+    { value: "C", label: "Variant C" },
+  ];
+
   const fetchChats = async () => {
-    setLoading(true);
     try {
       const res = await fetch(`/api/get-chats?landingPage=${landingPage}`);
       const data = await res.json();
-      setChats(data.chats || []);
+      const newChats = data.chats || [];
+      setChats(newChats);
       setLastUpdateTime(new Date());
+
+      // Check for new messages and play sound if enabled
+      const totalMessages = newChats.reduce(
+        (total, chat) => total + (chat.messages?.length || 0),
+        0
+      );
+      if (
+        soundEnabled &&
+        totalMessages > lastMessageCount &&
+        lastMessageCount > 0
+      ) {
+        playNotificationSound();
+      }
+      setLastMessageCount(totalMessages);
     } catch (error) {
       console.error("Failed to fetch chats:", error);
     }
@@ -228,6 +285,30 @@ export default function AdminChats() {
     }
   };
 
+  const restoreFromArchive = async (userId) => {
+    try {
+      const response = await fetch("/api/save-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          restoreFromArchive: true,
+          consent: true,
+        }),
+      });
+
+      if (response.ok) {
+        alert("Chat restored from archive successfully!");
+        fetchChats();
+      } else {
+        alert("Failed to restore chat from archive. Please try again.");
+      }
+    } catch (error) {
+      console.error("Failed to restore chat from archive:", error);
+      alert("Failed to restore chat from archive. Please try again.");
+    }
+  };
+
   const permanentlyDelete = async (userId) => {
     if (
       !confirm(
@@ -255,7 +336,7 @@ export default function AdminChats() {
     }
   };
 
-  // Filter chats based on active tab
+  // Enhanced filtering logic
   const filteredChats = chats
     .filter((chat) => {
       // Filter by tab
@@ -264,31 +345,23 @@ export default function AdminChats() {
       if (activeTab === "archive" && !chat.archived) return false;
       if (activeTab === "trash" && !chat.deleted) return false;
 
-      // Only apply landing page filter if user selected something
-      if (landingPageFilter) {
-        const allowedPaths =
-          serviceLandingPages[landingPageFilter]?.map((lp) => lp.path) || [];
-        if (!allowedPaths.includes(chat.landingPage)) return false;
-      }
+      // Enhanced filters
+      const matchesLandingPage =
+        !landingPageFilter || chat.landingPage === landingPageFilter;
+      const matchesSource = !sourceFilter || chat.sourceType === sourceFilter;
+      const matchesVariant =
+        !variantFilter || chat.landingPageVariant === variantFilter;
+      const matchesSearch =
+        !searchTerm ||
+        chat.userId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (chat.messages &&
+          chat.messages.some((msg) =>
+            msg.text.toLowerCase().includes(searchTerm.toLowerCase())
+          ));
 
-      // Only apply source filter if user selected something
-      if (sourceFilter) {
-        if ((chat.adSource || "unknown") !== sourceFilter) return false;
-      }
-
-      // Search filter (always applies if user types something)
-      if (searchTerm) {
-        const user = chat.userId ? chat.userId.toLowerCase() : "guest user";
-        const msg = chat.latestMessage?.text?.toLowerCase() || "";
-        if (
-          !user.includes(searchTerm.toLowerCase()) &&
-          !msg.includes(searchTerm.toLowerCase())
-        ) {
-          return false;
-        }
-      }
-
-      return true;
+      return (
+        matchesLandingPage && matchesSource && matchesVariant && matchesSearch
+      );
     })
     .sort((a, b) => {
       // Sort by most recent first (updatedAt or createdAt)
@@ -296,12 +369,6 @@ export default function AdminChats() {
       const dateB = new Date(b.updatedAt || b.createdAt || 0);
       return dateB - dateA;
     });
-
-  const totalPages = Math.ceil(filteredChats.length / chatsPerPage);
-  const paginatedChats = filteredChats.slice(
-    (currentPage - 1) * chatsPerPage,
-    currentPage * chatsPerPage
-  );
 
   return (
     <div
@@ -323,13 +390,55 @@ export default function AdminChats() {
             marginBottom: "1rem",
           }}
         >
-          <h1 style={{ color: "#400006", margin: 0 }}>💬 Chat Management</h1>
-          <div style={{ fontSize: "0.8rem", color: "#888" }}>
-            🔄 Auto-refresh every 5s • Last update:{" "}
-            {lastUpdateTime.toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+          <h1 style={{ color: "#400006", margin: 0, fontSize: "1rem" }}>💬 Chat Management</h1>
+          <div
+            onClick={() => setSoundEnabled(!soundEnabled)}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              cursor: "pointer",
+              padding: "0.5rem",
+              borderRadius: "4px",
+              transition: "background 0.2s",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "#f0f0f0")}
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background = "transparent")
+            }
+          >
+            <span
+              style={{
+                fontSize: "1rem",
+                color: soundEnabled ? "#400006" : "#ccc",
+              }}
+            >
+              {soundEnabled ? "🔊" : "🔇"}
+            </span>
+            <div
+              style={{
+                width: "24px",
+                height: "12px",
+                background: soundEnabled ? "#400006" : "#ccc",
+                borderRadius: "6px",
+                position: "relative",
+                transition: "background 0.2s",
+                marginTop: "2px",
+              }}
+            >
+              <div
+                style={{
+                  width: "8px",
+                  height: "8px",
+                  background: "white",
+                  borderRadius: "50%",
+                  position: "absolute",
+                  top: "2px",
+                  left: soundEnabled ? "14px" : "2px",
+                  transition: "left 0.2s",
+                }}
+              />
+            </div>
           </div>
         </div>
 
@@ -347,7 +456,7 @@ export default function AdminChats() {
               fontWeight: "500",
             }}
           >
-            Active ({chats.filter((c) => !c.archived && !c.deleted).length})
+            New ({chats.filter((c) => !c.archived && !c.deleted).length})
           </button>
           <button
             onClick={() => setActiveTab("archive")}
@@ -377,6 +486,100 @@ export default function AdminChats() {
           >
             Trash ({chats.filter((c) => c.deleted).length})
           </button>
+        </div>
+
+        {/* Analytics Dashboard */}
+        <div
+          style={{
+            background: "#fff6f9",
+            borderRadius: "6px",
+            padding: "8px",
+            marginBottom: "8px",
+            border: "1px solid #e6d3b3",
+          }}
+        >
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", justifyContent: "space-between" }}>
+            <div style={{ minWidth: "60px", textAlign: "center" }}>
+              <div style={{ fontSize: "0.6rem", color: "#666", fontWeight: "500" }}>
+                Total
+              </div>
+              <div
+                style={{
+                  fontSize: "1.1rem",
+                  fontWeight: "bold",
+                  color: "#400006",
+                }}
+              >
+                {chats.length}
+              </div>
+            </div>
+            <div style={{ minWidth: "60px", textAlign: "center" }}>
+              <div style={{ fontSize: "0.6rem", color: "#666", fontWeight: "500" }}>Today</div>
+              <div
+                style={{
+                  fontSize: "1.1rem",
+                  fontWeight: "bold",
+                  color: "#400006",
+                }}
+              >
+                {
+                  chats.filter((c) => {
+                    const today = new Date();
+                    const chatDate = new Date(c.createdAt);
+                    return chatDate.toDateString() === today.toDateString();
+                  }).length
+                }
+              </div>
+            </div>
+            <div style={{ minWidth: "60px", textAlign: "center" }}>
+              <div style={{ fontSize: "0.6rem", color: "#666", fontWeight: "500" }}>
+                Source
+              </div>
+              <div
+                style={{
+                  fontSize: "1.1rem",
+                  fontWeight: "bold",
+                  color: "#400006",
+                }}
+              >
+                {(() => {
+                  const sources = chats.map((c) => c.sourceType || "web");
+                  const sourceCount = {};
+                  sources.forEach(
+                    (s) => (sourceCount[s] = (sourceCount[s] || 0) + 1)
+                  );
+                  const topSource = Object.entries(sourceCount).sort(
+                    (a, b) => b[1] - a[1]
+                  )[0];
+                  return topSource ? topSource[0] : "N/A";
+                })()}
+              </div>
+            </div>
+            <div style={{ minWidth: "60px", textAlign: "center" }}>
+              <div style={{ fontSize: "0.6rem", color: "#666", fontWeight: "500" }}>Variant</div>
+              <div
+                style={{
+                  fontSize: "1.1rem",
+                  fontWeight: "bold",
+                  color: "#400006",
+                }}
+              >
+                {(() => {
+                  const variants = chats.map(
+                    (c) => c.landingPageVariant || "A"
+                  );
+                  const variantCount = {};
+                  variants.forEach(
+                    (v) => (variantCount[v] = (variantCount[v] || 0) + 1)
+                  );
+                  const topVariant = Object.entries(variantCount).sort(
+                    (a, b) => b[1] - a[1]
+                  )[0];
+                  return topVariant ? `${topVariant[0]}` : "N/A";
+                })()}
+              </div>
+            </div>
+          </div>
         </div>
 
         <div
@@ -432,24 +635,32 @@ export default function AdminChats() {
               ))}
             </select>
           </div>
-          <div style={{ color: "#666", fontSize: "0.9rem" }}>
-            {filteredChats.length} chat{filteredChats.length !== 1 ? "s" : ""}{" "}
-            found
-            {!landingPageFilter && !sourceFilter && !searchTerm && (
-              <span style={{ color: "#400006", fontWeight: "500" }}>
-                {" "}
-                (showing all {chats.length} total chats)
-              </span>
-            )}
+          <div>
+            <label style={{ marginRight: "0.5rem" }}>Filter by Variant: </label>
+            <select
+              value={variantFilter}
+              onChange={(e) => setVariantFilter(e.target.value)}
+              style={{
+                padding: "0.5rem",
+                borderRadius: "4px",
+                border: "1px solid #e6d3b3",
+              }}
+            >
+              {variantOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
-        <div style={{ marginBottom: 12 }}>
+        <div style={{ marginBottom: 12, position: "relative" }}>
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search by user or message... (leave empty to show all chats)"
+            placeholder="Search chats..."
             style={{
               width: "100%",
               padding: "0.6rem 1rem",
@@ -458,8 +669,21 @@ export default function AdminChats() {
               fontSize: "1rem",
               background: "#fff6f9",
               color: "#400006",
+              paddingLeft: "2.5rem",
             }}
           />
+          <span
+            style={{
+              position: "absolute",
+              left: "12px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              color: "#999",
+              fontSize: "1rem",
+            }}
+          >
+            🔍
+          </span>
         </div>
 
         <div
@@ -486,7 +710,7 @@ export default function AdminChats() {
               No chats found. Try refreshing or check your MongoDB connection.
             </div>
           ) : (
-            paginatedChats.map((chat, idx) => (
+            filteredChats.map((chat, idx) => (
               <div
                 key={chat.userId}
                 style={{ ...chatCardStyle, position: "relative" }}
@@ -593,60 +817,84 @@ export default function AdminChats() {
                       fontWeight: 600,
                       fontSize: "1.05rem",
                       color: "#400006",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
                     }}
                   >
-                    User:{" "}
-                    {chat.userId ? chat.userId.slice(0, 20) : "Guest User"}...
-                    <div
+                    <span>
+                      User: {chat.userId ? chat.userId.slice(0, 8) : "Guest"}
+                    </span>
+                    <span
                       style={{
-                        fontSize: "0.8rem",
+                        fontSize: "0.7rem",
                         color: "#888",
                         fontWeight: "normal",
-                        marginTop: "2px",
                       }}
                     >
                       {chat.updatedAt
                         ? new Date(chat.updatedAt).toLocaleTimeString([], {
                             hour: "2-digit",
                             minute: "2-digit",
-                            hour12: true
-                          }) +
-                          " • Date: " +
-                          new Date(chat.updatedAt).toLocaleDateString()
+                            hour12: true,
+                          })
                         : chat.createdAt
                         ? new Date(chat.createdAt).toLocaleTimeString([], {
                             hour: "2-digit",
                             minute: "2-digit",
-                            hour12: true
-                          }) +
-                          " • Date: " +
-                          new Date(chat.createdAt).toLocaleDateString()
-                        : "Unknown time"}
-                    </div>
+                            hour12: true,
+                          })
+                        : ""}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "0.7rem",
+                        color: "#888",
+                        fontWeight: "normal",
+                      }}
+                    >
+                      • {chat.adSource || "Unknown"}
+                    </span>
                   </div>
                 </div>
 
-                {chat.landingPage && (
-                  <div
-                    style={{
-                      fontSize: "0.85rem",
-                      color: "#888",
-                      marginTop: "2px",
-                    }}
-                  >
-                    Landing Page:{" "}
-                    {landingPageLabelsMap[chat.landingPage] ||
-                      chat.landingPage ||
-                      "Unknown"}
-                    <br />
-                    Source: {chat.adSource || "Unknown Source"}
-                  </div>
-                )}
-
-                <div style={{ margin: "8px 0", fontSize: "1rem" }}>
-                  <span style={{ color: "#400006" }}>
-                    {chat.latestMessage?.text || "No messages yet"}
-                  </span>
+                <div style={{ margin: "8px 0", fontSize: "0.9rem" }}>
+                  {chat.messages && chat.messages.length > 0 ? (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "4px",
+                      }}
+                    >
+                      {chat.messages.slice(-2).map((msg, idx) => (
+                        <div
+                          key={idx}
+                          style={{
+                            color: "#400006",
+                            opacity: idx === chat.messages.length - 1 ? 1 : 0.7,
+                            fontSize:
+                              idx === chat.messages.length - 1
+                                ? "0.9rem"
+                                : "0.8rem",
+                          }}
+                        >
+                          <span style={{ fontWeight: "500" }}>
+                            {msg.from === "user"
+                              ? "👤"
+                              : msg.from === "admin"
+                              ? "👤"
+                              : "🤖"}
+                          </span>{" "}
+                          {msg.text.length > 60
+                            ? msg.text.slice(0, 60) + "..."
+                            : msg.text}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <span style={{ color: "#400006" }}>No messages yet</span>
+                  )}
                 </div>
 
                 <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
@@ -731,21 +979,38 @@ export default function AdminChats() {
                     </>
                   )}
                   {activeTab === "archive" && (
-                    <button
-                      style={{
-                        background: "none",
-                        border: "none",
-                        color: "#bbb",
-                        fontSize: "0.9rem",
-                        cursor: "pointer",
-                        padding: 0,
-                        marginRight: 12,
-                        textDecoration: "underline",
-                      }}
-                      onClick={() => handleDelete(chat.userId)}
-                    >
-                      Move to Trash
-                    </button>
+                    <>
+                      <button
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: "#bbb",
+                          fontSize: "0.9rem",
+                          cursor: "pointer",
+                          padding: 0,
+                          marginRight: 12,
+                          textDecoration: "underline",
+                        }}
+                        onClick={() => handleDelete(chat.userId)}
+                      >
+                        Move to Trash
+                      </button>
+                      <button
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: "#400006",
+                          fontSize: "0.9rem",
+                          cursor: "pointer",
+                          padding: 0,
+                          marginRight: 12,
+                          textDecoration: "underline",
+                        }}
+                        onClick={() => restoreFromArchive(chat.userId)}
+                      >
+                        Restore
+                      </button>
+                    </>
                   )}
                   {activeTab === "trash" && (
                     <>
@@ -854,60 +1119,34 @@ export default function AdminChats() {
                 {expanded === chat.userId && (
                   <ChatDetail userId={chat.userId} />
                 )}
+
+                <div
+                  style={{
+                    fontSize: "0.8rem",
+                    color: "#666",
+                    marginBottom: "4px",
+                  }}
+                >
+                  <span style={{ marginRight: "8px" }}>
+                    📍 {chat.landingPage || "Unknown"}
+                  </span>
+                  <span style={{ marginRight: "8px" }}>
+                    🎯 {chat.sourceType || "web"}
+                  </span>
+                  <span style={{ marginRight: "8px" }}>
+                    {chat.landingPageVariant
+                      ? `📊 Variant ${chat.landingPageVariant}`
+                      : ""}
+                  </span>
+                  {chat.utmCampaign && (
+                    <span style={{ marginRight: "8px" }}>
+                      📢 {chat.utmCampaign}
+                    </span>
+                  )}
+                </div>
               </div>
             ))
           )}
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 8,
-            margin: "16px 0",
-          }}
-        >
-          <button
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-            style={{
-              padding: "0.4rem 1rem",
-              borderRadius: "4px",
-              background: "#fff6f9",
-              border: "1px solid #e6d3b3",
-              color: "#400006",
-              cursor: currentPage === 1 ? "not-allowed" : "pointer",
-              opacity: currentPage === 1 ? 0.5 : 1,
-              fontSize: "1rem",
-            }}
-          >
-            Previous
-          </button>
-          <span
-            style={{
-              alignSelf: "center",
-              color: "#400006",
-              fontWeight: 500,
-            }}
-          >
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-            style={{
-              padding: "0.4rem 1rem",
-              borderRadius: "4px",
-              background: "#fff6f9",
-              border: "1px solid #e6d3b3",
-              color: "#400006",
-              cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-              opacity: currentPage === totalPages ? 0.5 : 1,
-              fontSize: "1rem",
-            }}
-          >
-            Next
-          </button>
         </div>
       </div>
     </div>
@@ -991,9 +1230,9 @@ function ChatDetail({ userId }) {
                         ? "white"
                         : "#400006",
                     maxWidth: "70%",
-                    alignSelf: msg.from === "user" ? "flex-end" : "flex-start",
-                    marginLeft: msg.from === "user" ? "auto" : 0,
-                    marginRight: msg.from === "user" ? 0 : "auto",
+                    alignSelf: msg.from === "user" ? "flex-start" : "flex-end",
+                    marginLeft: msg.from === "user" ? 0 : "auto",
+                    marginRight: msg.from === "user" ? "auto" : 0,
                     boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
                     position: "relative",
                     fontSize: "0.9rem",
@@ -1011,7 +1250,7 @@ function ChatDetail({ userId }) {
                     {msg.from === "bot"
                       ? "🤖 Bot"
                       : msg.from === "admin"
-                      ? "👨‍💼 Admin"
+                      ? "👤 Admin"
                       : "👤 User"}
                   </div>
                   <div

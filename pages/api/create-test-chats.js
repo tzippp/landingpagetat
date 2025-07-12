@@ -14,99 +14,176 @@ export default async function handler(req, res) {
     const db = client.db(dbName);
     const collection = db.collection(collectionName);
 
-    // Create test chat data
+    // Create test chats with A/B testing data
     const testChats = [
       {
-        userId: "test-user-1",
-        userName: "John Doe",
-        email: "john@example.com",
-        phone: "555-1234",
+        userId: "user_google_ads_variant_a",
+        userName: "Sarah M.",
+        email: "sarah@example.com",
+        phone: "555-0101",
         landingPage: "/",
-        adSource: "google",
+        landingPageVariant: "A",
+        sourceType: "google",
+        utmSource: "google",
+        utmMedium: "cpc",
+        utmCampaign: "fine_line_tattoos",
+        utmContent: "variant_a",
+        utmTerm: "tattoo artist",
+        userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)",
+        referrer: "https://www.google.com/search?q=fine+line+tattoo+artist",
+        ip: "192.168.1.100",
         consent: true,
         messages: [
           {
             from: "user",
-            text: "Hi! I'm interested in getting a tattoo. What services do you offer?",
-            createdAt: new Date(Date.now() - 3600000), // 1 hour ago
+            text: "Hi! I'm looking for a fine line tattoo artist. Do you have any availability this week?",
+            createdAt: new Date(Date.now() - 3600000),
           },
           {
             from: "bot",
-            text: "Hello! We offer a variety of tattoo services including custom designs, traditional tattoos, and fine line work. What type of tattoo are you looking for?",
-            createdAt: new Date(Date.now() - 3500000), // 58 minutes ago
+            text: "Hello! 😊 We'd love to help you with your fine line tattoo! Our artists specialize in delicate, detailed work. What kind of design are you thinking about?",
+            createdAt: new Date(Date.now() - 3500000),
           },
           {
             from: "user",
-            text: "I want a small flower tattoo on my wrist. How much would that cost?",
-            createdAt: new Date(Date.now() - 3400000), // 56 minutes ago
+            text: "I want a small flower design on my wrist. How much would that cost?",
+            createdAt: new Date(Date.now() - 3400000),
+          },
+          {
+            from: "bot",
+            text: "Perfect! Fine line flower tattoos typically start at $80-120 depending on size and detail. We have availability this Thursday and Friday. Would you like to see some examples?",
+            createdAt: new Date(Date.now() - 3300000),
           },
         ],
         createdAt: new Date(Date.now() - 3600000),
-        updatedAt: new Date(Date.now() - 3400000),
+        updatedAt: new Date(Date.now() - 3300000),
       },
       {
-        userId: "test-user-2",
-        userName: "Jane Smith",
-        email: "jane@example.com",
-        phone: "555-5678",
-        landingPage: "/spray-tan-a",
-        adSource: "facebook",
+        userId: "user_facebook_ads_variant_b",
+        userName: "Mike R.",
+        email: "mike@example.com",
+        phone: "555-0202",
+        landingPage: "/",
+        landingPageVariant: "B",
+        sourceType: "facebook",
+        utmSource: "facebook",
+        utmMedium: "social",
+        utmCampaign: "summer_tattoo_special",
+        utmContent: "variant_b",
+        utmTerm: null,
+        userAgent:
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        referrer: "https://www.facebook.com/ads/click",
+        ip: "192.168.1.101",
         consent: true,
         messages: [
           {
             from: "user",
-            text: "Do you offer spray tanning services?",
-            createdAt: new Date(Date.now() - 7200000), // 2 hours ago
+            text: "I saw your ad about the summer tattoo special. What's included?",
+            createdAt: new Date(Date.now() - 7200000),
           },
           {
             from: "bot",
-            text: "Yes! We offer professional spray tanning services. Our sessions typically last 5-7 days and we use premium solutions.",
-            createdAt: new Date(Date.now() - 7100000), // 1 hour 58 minutes ago
+            text: "Great question! Our summer special includes 15% off all fine line tattoos and a free consultation. We're running this until August 31st. What style are you interested in?",
+            createdAt: new Date(Date.now() - 7100000),
+          },
+          {
+            from: "user",
+            text: "I'm thinking about a minimalist design. Do you have examples?",
+            createdAt: new Date(Date.now() - 7000000),
+          },
+          {
+            from: "bot",
+            text: "Absolutely! We have a great portfolio of minimalist designs. Would you like to see some examples? We can also do custom designs based on your ideas.",
+            createdAt: new Date(Date.now() - 6900000),
           },
         ],
         createdAt: new Date(Date.now() - 7200000),
-        updatedAt: new Date(Date.now() - 7100000),
+        updatedAt: new Date(Date.now() - 6900000),
       },
       {
-        userId: "test-user-3",
-        userName: "Mike Johnson",
-        email: "mike@example.com",
-        phone: "555-9012",
-        landingPage: "/pmu-brows-a",
-        adSource: "instagram",
+        userId: "user_instagram_organic_variant_c",
+        userName: "Emma L.",
+        email: "emma@example.com",
+        phone: "555-0303",
+        landingPage: "/",
+        landingPageVariant: "C",
+        sourceType: "instagram",
+        utmSource: "instagram",
+        utmMedium: "social",
+        utmCampaign: "organic_traffic",
+        utmContent: "variant_c",
+        utmTerm: null,
+        userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X)",
+        referrer: "https://www.instagram.com/p/example",
+        ip: "192.168.1.102",
         consent: true,
         messages: [
           {
             from: "user",
-            text: "I'm interested in permanent makeup for my eyebrows. What's the process like?",
-            createdAt: new Date(Date.now() - 1800000), // 30 minutes ago
-          },
-        ],
-        createdAt: new Date(Date.now() - 1800000),
-        updatedAt: new Date(Date.now() - 1800000),
-      },
-      {
-        userId: "test-user-4",
-        userName: "Sarah Wilson",
-        email: "sarah@example.com",
-        phone: "555-3456",
-        landingPage: "/smp-a",
-        adSource: "web",
-        consent: true,
-        messages: [
-          {
-            from: "user",
-            text: "Can you tell me more about scalp micropigmentation?",
-            createdAt: new Date(Date.now() - 900000), // 15 minutes ago
+            text: "I love your work! I saw your Instagram post about the butterfly tattoo. Is that still available?",
+            createdAt: new Date(Date.now() - 10800000),
           },
           {
             from: "bot",
-            text: "Scalp micropigmentation is a non-surgical hair loss solution that creates the appearance of a full head of hair using micro-pigments.",
-            createdAt: new Date(Date.now() - 800000), // 13 minutes ago
+            text: "Thank you! 🦋 Yes, that butterfly design is still available and it's one of our most popular pieces. It's perfect for a delicate, feminine look. Would you like to book a consultation?",
+            createdAt: new Date(Date.now() - 10700000),
+          },
+          {
+            from: "user",
+            text: "Yes, I'd love to! What are your rates for that design?",
+            createdAt: new Date(Date.now() - 10600000),
+          },
+          {
+            from: "bot",
+            text: "The butterfly design starts at $120 and takes about 1-1.5 hours. We have availability next week. Would you like to see our calendar?",
+            createdAt: new Date(Date.now() - 10500000),
           },
         ],
-        createdAt: new Date(Date.now() - 900000),
-        updatedAt: new Date(Date.now() - 800000),
+        createdAt: new Date(Date.now() - 10800000),
+        updatedAt: new Date(Date.now() - 10500000),
+      },
+      {
+        userId: "user_direct_traffic_variant_a",
+        userName: "Alex K.",
+        email: "alex@example.com",
+        phone: "555-0404",
+        landingPage: "/",
+        landingPageVariant: "A",
+        sourceType: "web",
+        utmSource: null,
+        utmMedium: null,
+        utmCampaign: null,
+        utmContent: null,
+        utmTerm: null,
+        userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
+        referrer: null,
+        ip: "192.168.1.103",
+        consent: true,
+        messages: [
+          {
+            from: "user",
+            text: "Hi there! I'm interested in getting a tattoo. What's your process like?",
+            createdAt: new Date(Date.now() - 14400000),
+          },
+          {
+            from: "bot",
+            text: "Hello! 👋 Our process is simple: consultation, design approval, and then your tattoo session. We specialize in fine line work and take pride in creating beautiful, lasting pieces. What kind of design are you thinking about?",
+            createdAt: new Date(Date.now() - 14300000),
+          },
+          {
+            from: "user",
+            text: "I want something small and meaningful. Maybe a heart or star?",
+            createdAt: new Date(Date.now() - 14200000),
+          },
+          {
+            from: "bot",
+            text: "Perfect! We have some beautiful minimalist heart and star designs. These typically start at $80 and take about 30-45 minutes. Would you like to see some examples?",
+            createdAt: new Date(Date.now() - 14100000),
+          },
+        ],
+        createdAt: new Date(Date.now() - 14400000),
+        updatedAt: new Date(Date.now() - 14100000),
       },
     ];
 
@@ -118,8 +195,12 @@ export default async function handler(req, res) {
     client.close();
     res.status(200).json({
       success: true,
-      message: "Test chats created successfully",
-      count: testChats.length,
+      message: `Created ${testChats.length} test chats with A/B testing data`,
+      chats: testChats.map((c) => ({
+        userId: c.userId,
+        variant: c.landingPageVariant,
+        source: c.sourceType,
+      })),
     });
   } catch (err) {
     res.status(500).json({

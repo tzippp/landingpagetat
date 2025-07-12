@@ -88,7 +88,9 @@ export default function ChatBot() {
 
     try {
       const landingPage = window.location.pathname || "/";
-      await fetch("/api/save-chat", {
+      console.log("Saving message:", { userId, message: msg, landingPage });
+
+      const response = await fetch("/api/save-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -98,6 +100,13 @@ export default function ChatBot() {
           consent: true,
         }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Save message failed:", errorData);
+      } else {
+        console.log("Message saved successfully");
+      }
     } catch (err) {
       console.error("Failed to save message:", err);
     }
@@ -105,6 +114,9 @@ export default function ChatBot() {
 
   const handleSend = async () => {
     if (!input.trim()) return;
+    
+    console.log("User sending message:", input);
+    
     const userMsg = { from: "user", text: input };
     const newMessages = [...messages, userMsg];
     let botReply = "";
@@ -123,10 +135,18 @@ export default function ChatBot() {
       botReply =
         "I can help with pricing, design ideas, and placement! Ask me anything about fine line tattoos.";
     }
+    
     setMessages([...newMessages, { from: "bot", text: botReply }]);
     setInput("");
-    await saveMessage(userMsg);
-    await saveMessage({ from: "bot", text: botReply });
+    
+    // Save both messages to database
+    try {
+      await saveMessage(userMsg);
+      await saveMessage({ from: "bot", text: botReply });
+      console.log("Both messages saved to database");
+    } catch (error) {
+      console.error("Error saving messages:", error);
+    }
   };
 
   return (
