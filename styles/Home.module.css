@@ -7,8 +7,11 @@
 .hero {
   text-align: center;
   padding: 3rem 1rem 2rem 1rem;
-  background: #f7f6f3; /* Cream */
+  background: #faf7f2; /* Cream */
   border-bottom: 4px solid #c9b037; /* Gold accent */
+  margin-bottom: 3.2rem;
+  padding-top: 2.7rem;
+  padding-bottom: 2.7rem;
 }
 .hero h1 {
   font-family: "Playfair Display", serif;
@@ -64,6 +67,7 @@
 
 .ideas {
   margin: 3rem 0 2rem 0;
+  background: #fff6f9; /* Very light pink */
 }
 .ideas h2 {
   text-align: center;
@@ -129,11 +133,14 @@
 
 .testimonials {
   margin: 3rem 0 2rem 0;
-  background: none;
+  background: #f7f6f3; /* Gold-tinted white */
   border-radius: 16px;
   padding: 0;
   text-align: center;
   border: none;
+  margin-bottom: 3.2rem;
+  padding-top: 2.7rem;
+  padding-bottom: 2.7rem;
 }
 .testimonialGrid {
   display: grid;
@@ -190,6 +197,16 @@
   }
   .testimonialCard {
     padding: 1rem 0.7rem 0.9rem 0.7rem;
+  }
+  .hero,
+  .ideas,
+  .testimonials,
+  .artistSection,
+  .portfolio,
+  .storefrontSection {
+    margin-bottom: 2.1rem;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
   }
 }
 
@@ -358,11 +375,14 @@
 .portfolio {
   margin: 3rem 0 2rem 0;
   text-align: center;
-  background: #f7f0ea;
+  background: #fff6f9; /* Very light pink */
   border-radius: 18px;
   box-shadow: 0 8px 32px rgba(200, 176, 55, 0.07),
     0 1.5px 8px rgba(64, 0, 6, 0.04);
   padding: 2.2rem 0 2.2rem 0;
+  margin-bottom: 3.2rem;
+  padding-top: 2.7rem;
+  padding-bottom: 2.7rem;
 }
 .portfolio h2 {
   font-family: "Playfair Display", serif;
@@ -445,11 +465,14 @@
 
 .artistSection {
   margin: 3.2rem 0 2.2rem 0;
-  background: #faf7f2;
+  background: #faf7f2; /* Cream */
   border-radius: 18px;
   box-shadow: 0 4px 18px rgba(200, 176, 55, 0.06);
   padding: 2.2rem 0 2.2rem 0;
   text-align: center;
+  margin-bottom: 3.2rem;
+  padding-top: 2.7rem;
+  padding-bottom: 2.7rem;
 }
 .artistSection h2 {
   font-family: "Playfair Display", serif;
@@ -522,12 +545,15 @@
 }
 
 .storefrontSection {
-  background: #faf7f2;
+  background: #faf7f2; /* Cream */
   border-radius: 18px;
   box-shadow: 0 2px 8px rgba(200, 176, 55, 0.06);
   padding: 2rem 0 1.5rem 0;
   margin: 2.5rem 0 0.5rem 0;
   text-align: center;
+  margin-bottom: 3.2rem;
+  padding-top: 2.7rem;
+  padding-bottom: 2.7rem;
 }
 .storefrontContent {
   max-width: 520px;
@@ -561,4 +587,15 @@
     padding: 1.2rem 0 1rem 0;
     margin: 1.2rem 0 0.2rem 0;
   }
+}
+
+/* Elegant gold divider between sections */
+.section-divider {
+  width: 100%;
+  height: 2.5px;
+  background: linear-gradient(90deg, #e6d3b3 60%, #c9b037 100%);
+  border: none;
+  margin: 0 auto 2.2rem auto;
+  border-radius: 2px;
+  opacity: 0.7;
 }

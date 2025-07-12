@@ -8,22 +8,36 @@ export default async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
   }
-  const { business } = req.query;
+  const { landingPage } = req.query;
   try {
     const client = await MongoClient.connect(uri);
     const db = client.db(dbName);
     const collection = db.collection(collectionName);
     let query = {};
-    if (business && business !== "all") {
-      query.business = business;
+    if (landingPage && landingPage !== "all") {
+      query.landingPage = landingPage;
     }
+    // Fetch all chat sessions (one per user)
     const chats = await collection
       .find(query)
-      .sort({ createdAt: -1 })
+      .sort({ updatedAt: -1 })
       .limit(200)
       .toArray();
+    // For admin listing: show userId, latest message, and updatedAt
+    const chatSummaries = chats.map((chat) => ({
+      userId: chat.userId,
+      latestMessage:
+        Array.isArray(chat.messages) && chat.messages.length > 0
+          ? chat.messages[chat.messages.length - 1]
+          : null,
+      updatedAt: chat.updatedAt,
+      landingPage: chat.landingPage || null,
+      userName: chat.userName || null,
+      email: chat.email || null,
+      phone: chat.phone || null,
+    }));
     client.close();
-    res.status(200).json({ chats });
+    res.status(200).json({ chats: chatSummaries });
   } catch (err) {
     res
       .status(500)

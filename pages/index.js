@@ -110,17 +110,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Interactive Chat Placeholder */}
-      <section className={styles.chat}>
-        <h2>Not Sure What to Get?</h2>
-        <p>
-          Chat with us below to get ideas for your perfect fine line tattoo!
-        </p>
-        <div className={styles.chatPlaceholder}>
-          [Interactive Chat Coming Soon]
-        </div>
-      </section>
-
       {/* Artist Section */}
       <section className={styles.artistSection}>
         <h2>Meet Your Fine Line Tattoo Artist</h2>
