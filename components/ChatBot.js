@@ -16,6 +16,7 @@ export default function ChatBot() {
   const [hovered, setHovered] = useState(false);
   const [userId, setUserId] = useState("");
   const [hasNewMessage, setHasNewMessage] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   // Generate unique userId on component mount
   useEffect(() => {
@@ -112,15 +113,34 @@ export default function ChatBot() {
     }
   };
 
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setSelectedImage(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() && !selectedImage) return;
     
     console.log("User sending message:", input);
     
-    const userMsg = { from: "user", text: input };
+    const userMsg = { 
+      from: "user", 
+      text: input,
+      image: selectedImage 
+    };
     const newMessages = [...messages, userMsg];
     let botReply = "";
-    if (/price|cost|how much|estimate/i.test(input)) {
+    
+    // Enhanced bot responses for images
+    if (selectedImage) {
+      botReply = "Thanks for sharing the image! I can see your design idea. Let me help you with pricing and placement options.";
+    } else if (/price|cost|how much|estimate/i.test(input)) {
       botReply =
         "Tattoo pricing depends on size, placement, and detail. Most fine line tattoos start at $80. Want a quote? Tell me your idea!";
     } else if (/idea|design|recommend|suggest/i.test(input)) {
@@ -138,6 +158,7 @@ export default function ChatBot() {
     
     setMessages([...newMessages, { from: "bot", text: botReply }]);
     setInput("");
+    setSelectedImage(null);
     
     // Save both messages to database
     try {
@@ -233,19 +254,82 @@ export default function ChatBot() {
                     ? "👨‍💼 Admin"
                     : "🤖 Bot"}
                 </div>
+                {msg.image && (
+                  <div style={{ marginBottom: "8px" }}>
+                    <img 
+                      src={msg.image} 
+                      alt="Shared image" 
+                      style={{
+                        maxWidth: "100%",
+                        maxHeight: "200px",
+                        borderRadius: "8px",
+                        border: "1px solid rgba(0,0,0,0.1)"
+                      }}
+                    />
+                  </div>
+                )}
                 <span>{msg.text}</span>
               </div>
             ))}
           </div>
           <div className={styles["chatbot-input"]}>
-            <input
-              type="text"
-              placeholder="Type your message..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            />
-            <button onClick={handleSend}>Send</button>
+            {selectedImage && (
+              <div style={{ 
+                padding: "8px", 
+                background: "#f0f0f0", 
+                borderRadius: "4px", 
+                marginBottom: "8px",
+                position: "relative"
+              }}>
+                <img 
+                  src={selectedImage} 
+                  alt="Selected" 
+                  style={{ 
+                    maxWidth: "100px", 
+                    maxHeight: "60px", 
+                    borderRadius: "4px" 
+                  }}
+                />
+                <button
+                  onClick={() => setSelectedImage(null)}
+                  style={{
+                    position: "absolute",
+                    top: "4px",
+                    right: "4px",
+                    background: "#ff4444",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "50%",
+                    width: "20px",
+                    height: "20px",
+                    cursor: "pointer",
+                    fontSize: "12px"
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            )}
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <input
+                type="text"
+                placeholder="Type your message..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                style={{ flex: "1" }}
+              />
+              <label style={{ cursor: "pointer", margin: "0 4px" }}>
+                📷
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  style={{ display: "none" }}
+                />
+              </label>
+              <button onClick={handleSend}>Send</button>
+            </div>
           </div>
         </div>
       )}

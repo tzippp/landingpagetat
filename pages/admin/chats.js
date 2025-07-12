@@ -1,5 +1,12 @@
 import React, { useState } from "react";
 
+export async function getServerSideProps() {
+  // Use absolute URL for SSR
+  const res = await fetch("http://localhost:3001/api/get-chats");
+  const data = await res.json();
+  return { props: { initialChats: data.chats || [] } };
+}
+
 const adSourceLabels = {
   facebook: "Facebook",
   google: "Google",
@@ -7,13 +14,14 @@ const adSourceLabels = {
   unknown: "Unknown Source",
 };
 
-export default function AdminChats() {
-  const [chats, setChats] = useState([]);
+export default function AdminChats({ initialChats }) {
+  const [chats, setChats] = useState(initialChats);
   const [expanded, setExpanded] = useState(null);
   const [landingPage, setLandingPage] = useState("all");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [replyingTo, setReplyingTo] = useState(null);
+  const [replyImage, setReplyImage] = useState(null);
   const [readChats, setReadChats] = useState({});
   const [archivedChats, setArchivedChats] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
@@ -134,6 +142,7 @@ export default function AdminChats() {
   ];
 
   const fetchChats = async () => {
+    setLoading(true);
     try {
       const res = await fetch(`/api/get-chats?landingPage=${landingPage}`);
       const data = await res.json();
@@ -160,21 +169,28 @@ export default function AdminChats() {
     setLoading(false);
   };
 
-  // Fetch chats on initial load
+  // Fetch chats on initial load (client-side refresh)
   React.useEffect(() => {
-    fetchChats();
-  }, []);
-
-  // Auto-refresh every 5 seconds for real-time updates
-  React.useEffect(() => {
+    // Only auto-refresh, don't set loading to true on mount
     const interval = setInterval(() => {
       fetchChats();
     }, 5000);
     return () => clearInterval(interval);
   }, []);
 
+  const handleAdminImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file && file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setReplyImage(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const sendAdminReply = async (userId) => {
-    if (!replyText.trim()) return;
+    if (!replyText.trim() && !replyImage) return;
 
     try {
       await fetch("/api/save-chat", {
@@ -182,11 +198,12 @@ export default function AdminChats() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId,
-          message: { from: "admin", text: replyText },
+          message: { from: "admin", text: replyText, image: replyImage },
           consent: true,
         }),
       });
       setReplyText("");
+      setReplyImage(null);
       setReplyingTo(null);
       // Immediately refresh to show the new message
       await fetchChats();
@@ -390,7 +407,9 @@ export default function AdminChats() {
             marginBottom: "1rem",
           }}
         >
-          <h1 style={{ color: "#400006", margin: 0, fontSize: "1rem" }}>💬 Chat Management</h1>
+          <h1 style={{ color: "#400006", margin: 0, fontSize: "1rem" }}>
+            💬 Chat Management
+          </h1>
           <div
             onClick={() => setSoundEnabled(!soundEnabled)}
             style={{
@@ -498,9 +517,18 @@ export default function AdminChats() {
             border: "1px solid #e6d3b3",
           }}
         >
-          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", justifyContent: "space-between" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "8px",
+              flexWrap: "wrap",
+              justifyContent: "space-between",
+            }}
+          >
             <div style={{ minWidth: "60px", textAlign: "center" }}>
-              <div style={{ fontSize: "0.6rem", color: "#666", fontWeight: "500" }}>
+              <div
+                style={{ fontSize: "0.6rem", color: "#666", fontWeight: "500" }}
+              >
                 Total
               </div>
               <div
@@ -514,7 +542,11 @@ export default function AdminChats() {
               </div>
             </div>
             <div style={{ minWidth: "60px", textAlign: "center" }}>
-              <div style={{ fontSize: "0.6rem", color: "#666", fontWeight: "500" }}>Today</div>
+              <div
+                style={{ fontSize: "0.6rem", color: "#666", fontWeight: "500" }}
+              >
+                Today
+              </div>
               <div
                 style={{
                   fontSize: "1.1rem",
@@ -532,7 +564,9 @@ export default function AdminChats() {
               </div>
             </div>
             <div style={{ minWidth: "60px", textAlign: "center" }}>
-              <div style={{ fontSize: "0.6rem", color: "#666", fontWeight: "500" }}>
+              <div
+                style={{ fontSize: "0.6rem", color: "#666", fontWeight: "500" }}
+              >
                 Source
               </div>
               <div
@@ -556,7 +590,11 @@ export default function AdminChats() {
               </div>
             </div>
             <div style={{ minWidth: "60px", textAlign: "center" }}>
-              <div style={{ fontSize: "0.6rem", color: "#666", fontWeight: "500" }}>Variant</div>
+              <div
+                style={{ fontSize: "0.6rem", color: "#666", fontWeight: "500" }}
+              >
+                Variant
+              </div>
               <div
                 style={{
                   fontSize: "1.1rem",
@@ -698,7 +736,21 @@ export default function AdminChats() {
             width: "100%",
           }}
         >
-          {chats.length === 0 ? (
+          {loading ? (
+            <div
+              style={{
+                color: "#400006",
+                textAlign: "center",
+                padding: "2rem",
+                fontSize: "1.1rem",
+              }}
+            >
+              <div style={{ marginBottom: "1rem" }}>🔄 Loading chats...</div>
+              <div style={{ fontSize: "0.9rem", color: "#666" }}>
+                Fetching latest conversations...
+              </div>
+            </div>
+          ) : chats.length === 0 ? (
             <div
               style={{
                 color: "#888",
@@ -1057,10 +1109,132 @@ export default function AdminChats() {
                       borderRadius: "8px",
                     }}
                   >
+                    {/* Quick Reply Buttons */}
+                    <div
+                      style={{
+                        marginBottom: "8px",
+                        display: "flex",
+                        gap: "4px",
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <button
+                        onClick={() =>
+                          setReplyText(
+                            "Hi! Thanks for reaching out. How can I help you today?"
+                          )
+                        }
+                        style={{
+                          padding: "0.3rem 0.6rem",
+                          borderRadius: "4px",
+                          background: "#e6d3b3",
+                          color: "#400006",
+                          border: "1px solid #d1c0a0",
+                          cursor: "pointer",
+                          fontSize: "0.7rem",
+                        }}
+                      >
+                        👋 Greeting
+                      </button>
+                      <button
+                        onClick={() =>
+                          setReplyText(
+                            "Great question! Let me get back to you with more details."
+                          )
+                        }
+                        style={{
+                          padding: "0.3rem 0.6rem",
+                          borderRadius: "4px",
+                          background: "#e6d3b3",
+                          color: "#400006",
+                          border: "1px solid #d1c0a0",
+                          cursor: "pointer",
+                          fontSize: "0.7rem",
+                        }}
+                      >
+                        🤔 Follow up
+                      </button>
+                      <button
+                        onClick={() =>
+                          setReplyText(
+                            "Perfect! I'll send you our pricing and availability."
+                          )
+                        }
+                        style={{
+                          padding: "0.3rem 0.6rem",
+                          borderRadius: "4px",
+                          background: "#e6d3b3",
+                          color: "#400006",
+                          border: "1px solid #d1c0a0",
+                          cursor: "pointer",
+                          fontSize: "0.7rem",
+                        }}
+                      >
+                        💰 Pricing
+                      </button>
+                      <button
+                        onClick={() =>
+                          setReplyText(
+                            "Thanks! I'll schedule your appointment right away."
+                          )
+                        }
+                        style={{
+                          padding: "0.3rem 0.6rem",
+                          borderRadius: "4px",
+                          background: "#e6d3b3",
+                          color: "#400006",
+                          border: "1px solid #d1c0a0",
+                          cursor: "pointer",
+                          fontSize: "0.7rem",
+                        }}
+                      >
+                        📅 Book
+                      </button>
+                    </div>
+
+                    {replyImage && (
+                      <div
+                        style={{
+                          padding: "8px",
+                          background: "#f0f0f0",
+                          borderRadius: "4px",
+                          marginBottom: "8px",
+                          position: "relative",
+                        }}
+                      >
+                        <img
+                          src={replyImage}
+                          alt="Selected"
+                          style={{
+                            maxWidth: "150px",
+                            maxHeight: "100px",
+                            borderRadius: "4px",
+                          }}
+                        />
+                        <button
+                          onClick={() => setReplyImage(null)}
+                          style={{
+                            position: "absolute",
+                            top: "4px",
+                            right: "4px",
+                            background: "#ff4444",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "50%",
+                            width: "20px",
+                            height: "20px",
+                            cursor: "pointer",
+                            fontSize: "12px",
+                          }}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )}
                     <textarea
                       value={replyText}
                       onChange={(e) => setReplyText(e.target.value)}
-                      placeholder="Type your reply..."
+                      placeholder="Type your reply or use quick replies above..."
                       style={{
                         width: "100%",
                         minHeight: "60px",
@@ -1068,6 +1242,7 @@ export default function AdminChats() {
                         borderRadius: "4px",
                         border: "1px solid #e6d3b3",
                         resize: "vertical",
+                        fontSize: "0.9rem",
                       }}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && !e.shiftKey) {
@@ -1076,11 +1251,13 @@ export default function AdminChats() {
                         }
                       }}
                     />
+
                     <div
                       style={{
                         marginTop: "8px",
                         display: "flex",
                         gap: "8px",
+                        alignItems: "center",
                       }}
                     >
                       <button
@@ -1092,13 +1269,34 @@ export default function AdminChats() {
                           color: "white",
                           border: "none",
                           cursor: "pointer",
+                          fontSize: "0.9rem",
                         }}
                       >
-                        Send Reply
+                        💬 Send Reply
                       </button>
+                      <label
+                        style={{
+                          cursor: "pointer",
+                          padding: "0.4rem 0.8rem",
+                          borderRadius: "4px",
+                          background: "#e6d3b3",
+                          color: "#400006",
+                          border: "1px solid #d1c0a0",
+                          fontSize: "0.9rem",
+                        }}
+                      >
+                        📷 Image
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleAdminImageUpload}
+                          style={{ display: "none" }}
+                        />
+                      </label>
                       <button
                         onClick={() => {
                           setReplyText("");
+                          setReplyImage(null);
                           setReplyingTo(null);
                         }}
                         style={{
@@ -1108,10 +1306,20 @@ export default function AdminChats() {
                           color: "white",
                           border: "none",
                           cursor: "pointer",
+                          fontSize: "0.9rem",
                         }}
                       >
-                        Cancel
+                        ❌ Cancel
                       </button>
+                      <span
+                        style={{
+                          fontSize: "0.8rem",
+                          color: "#666",
+                          marginLeft: "auto",
+                        }}
+                      >
+                        💡 Tip: Press Enter to send, Shift+Enter for new line
+                      </span>
                     </div>
                   </div>
                 )}
