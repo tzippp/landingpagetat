@@ -18,7 +18,7 @@ export default function AdminChats({ initialChats }) {
   const [chats, setChats] = useState(initialChats);
   const [expanded, setExpanded] = useState(null);
   const [landingPage, setLandingPage] = useState("all");
-  const [loading, setLoading] = useState(false);
+
   const [replyText, setReplyText] = useState("");
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyImage, setReplyImage] = useState(null);
@@ -142,7 +142,6 @@ export default function AdminChats({ initialChats }) {
   ];
 
   const fetchChats = async () => {
-    setLoading(true);
     try {
       const res = await fetch(`/api/get-chats?landingPage=${landingPage}`);
       const data = await res.json();
@@ -166,7 +165,6 @@ export default function AdminChats({ initialChats }) {
     } catch (error) {
       console.error("Failed to fetch chats:", error);
     }
-    setLoading(false);
   };
 
   // Fetch chats on initial load (client-side refresh)
@@ -736,21 +734,7 @@ export default function AdminChats({ initialChats }) {
             width: "100%",
           }}
         >
-          {loading ? (
-            <div
-              style={{
-                color: "#400006",
-                textAlign: "center",
-                padding: "2rem",
-                fontSize: "1.1rem",
-              }}
-            >
-              <div style={{ marginBottom: "1rem" }}>🔄 Loading chats...</div>
-              <div style={{ fontSize: "0.9rem", color: "#666" }}>
-                Fetching latest conversations...
-              </div>
-            </div>
-          ) : chats.length === 0 ? (
+          {chats.length === 0 ? (
             <div
               style={{
                 color: "#888",
