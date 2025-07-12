@@ -18,21 +18,46 @@ export default async function handler(req, res) {
     consent,
     archive,
     delete: deleteChat,
+    restore,
+    permanentDelete,
   } = req.body;
-  if (!userId || (!message && !archive && !deleteChat) || !consent) {
-    return res
-      .status(400)
-      .json({
-        error:
-          "userId, message, and consent are required (unless archiving or deleting)",
-      });
+  if (
+    !userId ||
+    (!message && !archive && !deleteChat && !restore && !permanentDelete) ||
+    !consent
+  ) {
+    return res.status(400).json({
+      error:
+        "userId, message, and consent are required (unless archiving, deleting, restoring, or permanently deleting)",
+    });
   }
   try {
     const client = await MongoClient.connect(uri);
     const db = client.db(dbName);
     const collection = db.collection(collectionName);
-    if (deleteChat) {
+    if (permanentDelete) {
       await collection.deleteOne({ userId });
+      client.close();
+      return res.status(200).json({ success: true, permanentlyDeleted: true });
+    }
+    if (restore) {
+      await collection.updateOne(
+        { userId },
+        {
+          $unset: { deleted: "", deletedAt: "" },
+          $set: { updatedAt: new Date() },
+        }
+      );
+      client.close();
+      return res.status(200).json({ success: true, restored: true });
+    }
+    if (deleteChat) {
+      await collection.updateOne(
+        { userId },
+        {
+          $set: { deleted: true, deletedAt: new Date(), updatedAt: new Date() },
+        }
+      );
       client.close();
       return res.status(200).json({ success: true, deleted: true });
     }

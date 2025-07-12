@@ -15,6 +15,7 @@ export default function ChatBot() {
   const [showTooltip, setShowTooltip] = useState(true);
   const [hovered, setHovered] = useState(false);
   const [userId, setUserId] = useState("");
+  const [hasNewMessage, setHasNewMessage] = useState(false);
 
   // Generate unique userId on component mount
   useEffect(() => {
@@ -42,6 +43,44 @@ export default function ChatBot() {
   useEffect(() => {
     if (open) setShowTooltip(false);
   }, [open]);
+
+  // Fetch messages from database for this user
+  const fetchMessages = async () => {
+    if (!userId) return;
+
+    try {
+      const response = await fetch(`/api/get-chat-detail?userId=${userId}`);
+      const data = await response.json();
+
+      if (data.messages && data.messages.length > 0) {
+        // Convert database messages to chat format
+        const dbMessages = data.messages.map((msg) => ({
+          from: msg.from,
+          text: msg.text,
+          createdAt: msg.createdAt,
+        }));
+
+        // Only update if we have new messages
+        if (dbMessages.length > messages.length - 1) {
+          // -1 for initial bot message
+          setMessages([initialMessages[0], ...dbMessages]);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch messages:", error);
+    }
+  };
+
+  // Fetch messages when chat opens and periodically
+  useEffect(() => {
+    if (open && userId) {
+      fetchMessages();
+
+      // Check for new messages every 3 seconds when chat is open
+      const interval = setInterval(fetchMessages, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [open, userId]);
 
   // Save message to MongoDB
   const saveMessage = async (msg) => {
@@ -137,11 +176,43 @@ export default function ChatBot() {
             {messages.map((msg, idx) => (
               <div
                 key={idx}
+                title={
+                  msg.createdAt ? new Date(msg.createdAt).toLocaleString() : ""
+                }
                 style={{
-                  textAlign: msg.from === "bot" ? "left" : "right",
+                  textAlign: msg.from === "user" ? "right" : "left",
                   margin: "0.5rem 0",
+                  padding: "8px 12px",
+                  borderRadius: "12px",
+                  background:
+                    msg.from === "user"
+                      ? "#400006"
+                      : msg.from === "admin"
+                      ? "#e6d3b3"
+                      : "#f7f6f3",
+                  color: msg.from === "user" ? "white" : "#400006",
+                  maxWidth: "70%",
+                  alignSelf: msg.from === "user" ? "flex-end" : "flex-start",
+                  marginLeft: msg.from === "user" ? "auto" : "0",
+                  marginRight: msg.from === "user" ? "0" : "auto",
+                  fontSize: "0.9rem",
+                  lineHeight: "1.4",
+                  cursor: msg.createdAt ? "pointer" : "default",
                 }}
               >
+                <div
+                  style={{
+                    fontSize: "0.75rem",
+                    opacity: 0.7,
+                    marginBottom: "4px",
+                  }}
+                >
+                  {msg.from === "user"
+                    ? "You"
+                    : msg.from === "admin"
+                    ? "👨‍💼 Admin"
+                    : "🤖 Bot"}
+                </div>
                 <span>{msg.text}</span>
               </div>
             ))}
