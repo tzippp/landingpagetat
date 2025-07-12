@@ -7,37 +7,66 @@
 .hero {
   text-align: center;
   padding: 3rem 1rem 2rem 1rem;
-  background: #f7f6f3;
+  background: #f7f6f3; /* Cream */
+  border-bottom: 4px solid #c9b037; /* Gold accent */
 }
 .hero h1 {
   font-family: "Playfair Display", serif;
   font-size: 2.8rem;
-  color: #232323;
+  color: #400006; /* Deep red */
   margin-bottom: 1rem;
+  letter-spacing: 1px;
 }
 .hero p {
   font-family: "Montserrat", sans-serif;
   font-size: 1.3rem;
-  color: #444;
+  color: #400006; /* Deep red for elegance */
 }
 .cta {
-  background: #a3bffa;
-  color: #232323;
-  border: none;
+  background: #e6d3b3; /* Champagne Gold */
+  color: #400006; /* Deep red text */
+  border: 2px solid #400006; /* Deep red border */
   padding: 1.1rem 2.2rem;
   font-size: 1.25rem;
   border-radius: 30px;
   cursor: pointer;
   margin-top: 1.7rem;
-  transition: background 0.2s;
-  font-family: "Montserrat", sans-serif;
+  transition: background 0.2s, color 0.2s, border 0.2s, font-family 0.2s;
+  font-family: "Dancing Script", cursive, "Montserrat", sans-serif;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(200, 176, 55, 0.08);
 }
 .cta:hover {
-  background: #7f9cf5;
+  background: #e6d3b3; /* Champagne Gold on hover for harmony */
+  color: #400006; /* Deep red text */
+  border: 2px solid #400006;
+}
+
+.ctaRoseGold {
+  background: #e7b7a0; /* Rose Gold */
+  color: #400006; /* Deep red text */
+  border: 2px solid #400006; /* Deep red border */
+  padding: 1.1rem 2.2rem;
+  font-size: 1.25rem;
+  border-radius: 30px;
+  cursor: pointer;
+  margin-top: 1.7rem;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(200, 176, 55, 0.08);
+}
+.ctaRoseGold:hover {
+  background: #fff6f9; /* Very light pink on hover */
+  color: #400006; /* Deep red text */
+  border: 2px solid #e7b7a0; /* Rose Gold border on hover */
 }
 
 .ideas {
   margin: 3rem 0 2rem 0;
+}
+.ideas h2 {
+  text-align: center;
 }
 .ideasGrid {
   display: flex;
@@ -52,46 +81,69 @@
   padding-bottom: 1rem;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
+  background: #fff6f9; /* Very light pink */
+  border-radius: 12px;
 }
 .carousel::-webkit-scrollbar {
   height: 8px;
-  background: #eee;
+  background: #f7f6f3;
 }
 .carousel::-webkit-scrollbar-thumb {
-  background: #ccc;
+  background: #c9b037;
   border-radius: 4px;
 }
 .ideaCard {
-  background: #fff;
+  background: #f7f6f3;
   border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(200, 176, 55, 0.08);
   padding: 1rem;
   text-align: center;
   width: 180px;
+  height: 240px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   flex: 0 0 auto;
   scroll-snap-align: start;
+  border: 1.5px solid #fff6f9;
 }
 .ideaCard img {
   width: 100%;
+  height: 160px;
+  object-fit: cover;
+  object-position: center 40%;
   border-radius: 12px;
   margin-bottom: 0.5rem;
+  border: 2px solid #c9b037;
+  background: #fff;
+  display: block;
+}
+.ideaCard p {
+  margin: 0;
+  font-size: 1rem;
+  color: #400006;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 500;
 }
 
 .testimonials {
   margin: 3rem 0 2rem 0;
-  background: #f3f2ef;
+  background: #fff6f9; /* Very light pink */
   border-radius: 16px;
   padding: 2rem 1rem;
   text-align: center;
+  border: 1.5px solid #c9b037;
 }
 .testimonials blockquote {
   font-style: italic;
   margin: 1rem auto;
   max-width: 500px;
+  color: #400006;
 }
 .testimonials footer {
   font-size: 0.9rem;
-  color: #888;
+  color: #c9b037;
 }
 
 .chat {
@@ -101,10 +153,11 @@
 .chatPlaceholder {
   margin: 1.5rem auto 0 auto;
   padding: 2rem;
-  background: #e9e7e1;
+  background: #f7f6f3;
   border-radius: 12px;
-  color: #888;
+  color: #400006;
   max-width: 400px;
+  border: 1.5px solid #c9b037;
 }
 
 .footer {
@@ -112,6 +165,233 @@
   padding: 1.5rem 0 1rem 0;
   text-align: center;
   font-size: 0.95rem;
-  color: #888;
+  color: #400006;
   background: none;
+  border-top: 2px solid #c9b037;
+  font-family: "Montserrat", sans-serif;
+}
+
+/* Floating ChatBot styles */
+.chatbot-bubble {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  width: 60px;
+  height: 60px;
+  background: #faf7f2;
+  border-radius: 50%;
+  box-shadow: 0 4px 16px rgba(230, 211, 179, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000;
+  transition: box-shadow 0.2s, background 0.2s;
+  border: 2.5px solid #e6d3b3;
+}
+.chatbot-bubble:hover {
+  box-shadow: 0 8px 24px rgba(216, 202, 184, 0.22);
+  background: #fff6f9;
+}
+.chatbot-window {
+  position: fixed;
+  bottom: 100px;
+  right: 32px;
+  width: 320px;
+  max-width: 90vw;
+  background: #faf7f2;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(230, 211, 179, 0.18);
+  z-index: 1001;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #e6d3b3;
+}
+.chatbot-header {
+  background: #faf7f2;
+  color: #400006;
+  padding: 1rem;
+  font-family: "Montserrat", sans-serif;
+  font-weight: bold;
+  font-size: 1.1rem;
+  border-bottom: 1px solid #e6d3b3;
+}
+.chatbot-messages {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  font-family: "Montserrat", sans-serif;
+  font-size: 1rem;
+  color: #400006;
+  background: #faf7f2;
+}
+.chatbot-input {
+  display: flex;
+  border-top: 1px solid #e6d3b3;
+  background: #faf7f2;
+}
+.chatbot-input input {
+  flex: 1;
+  border: none;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  font-family: "Montserrat", sans-serif;
+  border-radius: 0 0 0 16px;
+  outline: none;
+  background: transparent;
+  color: #400006;
+}
+.chatbot-input button {
+  background: #faf7f2;
+  color: #400006;
+  border: 2px solid #400006;
+  padding: 0 1.2rem;
+  font-size: 1.1rem;
+  font-family: "Montserrat", sans-serif;
+  border-radius: 0 0 16px 0;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.chatbot-input button:hover {
+  background: #400006;
+  color: #faf7f2;
+}
+
+.chatbot-tooltip {
+  position: absolute;
+  right: 70px;
+  bottom: 10px;
+  background: #fffbe7;
+  color: #400006;
+  font-family: "Montserrat", sans-serif;
+  font-size: 1rem;
+  padding: 0.6rem 1.1rem;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(230, 211, 179, 0.12);
+  animation: chatbot-tooltip-pop 1s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  z-index: 1002;
+  white-space: nowrap;
+}
+@keyframes chatbot-tooltip-pop {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .carousel {
+    gap: 0.7rem;
+    padding-bottom: 0.5rem;
+  }
+  .ideaCard {
+    width: 120px;
+    height: 160px;
+    padding: 0.5rem;
+  }
+  .ideaCard img {
+    height: 90px;
+    object-position: center 45%;
+  }
+  .ideaCard p {
+    font-size: 0.85rem;
+  }
+}
+
+.portfolio {
+  margin: 3rem 0 2rem 0;
+  text-align: center;
+  background: #f7f0ea;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(200, 176, 55, 0.07),
+    0 1.5px 8px rgba(64, 0, 6, 0.04);
+  padding: 2.2rem 0 2.2rem 0;
+}
+.portfolio h2 {
+  font-family: "Playfair Display", serif;
+  color: #400006;
+  font-size: 1.5rem;
+  margin-bottom: 1.2rem;
+}
+.portfolioGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1.2rem;
+  justify-items: center;
+  align-items: center;
+  margin: 0 auto;
+  max-width: 700px;
+}
+.portfolioImg {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-width: 180px;
+  max-height: 180px;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 14px;
+  border: 2px solid #c9b037;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(200, 176, 55, 0.08);
+  transition: transform 0.18s, box-shadow 0.18s, filter 0.18s;
+  display: block;
+  position: relative;
+  z-index: 1;
+  filter: brightness(1.13) contrast(1.18) saturate(1.08);
+}
+.portfolioImg::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 14px;
+  background: rgba(250, 247, 242, 0.22);
+  pointer-events: none;
+  z-index: 2;
+}
+.portfolioImg:hover {
+  transform: scale(1.04);
+  box-shadow: 0 4px 16px rgba(200, 176, 55, 0.16);
+}
+@media (max-width: 600px) {
+  .portfolioGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.7rem;
+  }
+  .portfolioImg {
+    max-width: 100px;
+    max-height: 100px;
+  }
+}
+
+.flowerArmAdjust {
+  object-position: 50% 40% !important;
+}
+
+.flashSheetImg {
+  width: 100%;
+  max-width: 520px;
+  display: block;
+  margin: 0 auto;
+  border-radius: 16px;
+  border: 2px solid #c9b037;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(200, 176, 55, 0.08);
+}
+@media (max-width: 600px) {
+  .flashSheetImg {
+    max-width: 100%;
+  }
 }

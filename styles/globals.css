@@ -1,9 +1,29 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: "Segoe UI", "Roboto", "Arial", sans-serif;
-  background: #faf9f6;
-  color: #222;
+  font-family: "Montserrat", "Segoe UI", "Roboto", "Arial", sans-serif;
+  background: #faf7f2;
+  color: #400006;
+  font-size: 1.08rem;
+  line-height: 1.7;
+}
+
+h1,
+h2 {
+  font-family: "Playfair Display", serif;
+  letter-spacing: 0.5px;
+  color: #400006;
+  margin-top: 0;
+}
+
+h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
 * {

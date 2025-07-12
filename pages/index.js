@@ -1,36 +1,37 @@
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
+import ChatBot from "../components/ChatBot";
 
 const tattooIdeas = [
   {
-    src: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80",
-    alt: "Minimalist Flower",
-    label: "Minimalist Flower",
+    src: "/images/flower-arm-tattoo.jpg",
+    alt: "Flower Arm Tattoo",
+    label: "Flower Arm Tattoo",
   },
   {
-    src: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80",
-    alt: "Tiny Heart",
-    label: "Tiny Heart",
+    src: "/images/dragonfly-in-color-tattoo.jpg",
+    alt: "Dragonfly in Color Tattoo",
+    label: "Dragonfly in Color Tattoo",
   },
   {
-    src: "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80",
-    alt: "Fine Line Animal",
-    label: "Fine Line Animal",
+    src: "/images/heart-lotus-tattoo.jpg",
+    alt: "Heart Lotus Tattoo",
+    label: "Heart Lotus Tattoo",
   },
   {
-    src: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=400&q=80",
-    alt: "Tiny Star",
-    label: "Tiny Star",
+    src: "/images/moon-sun-tattoo.jpg",
+    alt: "Moon Sun Tattoo",
+    label: "Moon Sun Tattoo",
   },
   {
-    src: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=400&q=80",
-    alt: "Abstract Line",
-    label: "Abstract Line",
+    src: "/images/fine-line-tattoo-of-cupcake-in-rockland-county-ny.jpg",
+    alt: "Cupcake Fine Line Tattoo",
+    label: "Cupcake Fine Line Tattoo",
   },
   {
-    src: "https://images.unsplash.com/photo-1465101178521-c1a9136a3b99?auto=format&fit=crop&w=400&q=80",
-    alt: "Tiny Wave",
-    label: "Tiny Wave",
+    src: "/images/bubble-bee-tattoo.jpg",
+    alt: "Bubble Bee Tattoo",
+    label: "Bubble Bee Tattoo",
   },
 ];
 
@@ -44,7 +45,7 @@ export default function Home() {
           content="Discover beautiful fine line tattoos. Get inspired and chat with us to find your perfect design!"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Playfair+Display:wght@700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Playfair+Display:wght@700&family=Dancing+Script:wght@400;700&display=swap"
           rel="stylesheet"
         />
       </Head>
@@ -59,13 +60,22 @@ export default function Home() {
       {/* Tattoo Ideas Carousel Section */}
       <section className={styles.ideas}>
         <h2>Simple Fine Line Tattoo Ideas</h2>
-        <div className={styles.carousel}>
-          {tattooIdeas.map((idea, idx) => (
-            <div className={styles.ideaCard} key={idx}>
-              <img src={idea.src} alt={idea.alt} />
-              <p>{idea.label}</p>
-            </div>
-          ))}
+        <div style={{ textAlign: "center" }}>
+          <img
+            src="/images/4-white-flash-sheet.png"
+            alt="Fine Line Flash Sheet"
+            className={styles.flashSheetImg}
+          />
+          <p
+            style={{
+              marginTop: "1rem",
+              color: "#400006",
+              fontFamily: "Montserrat, sans-serif",
+              fontSize: "1.1rem",
+            }}
+          >
+            Choose from our custom fine line flash designs or request your own!
+          </p>
         </div>
       </section>
 
@@ -95,12 +105,53 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Portfolio Section */}
+      <section className={styles.portfolio}>
+        <h2>My Fine Line Tattoo Portfolio</h2>
+        <div className={styles.portfolioGrid}>
+          {[
+            "flower-arm-tattoo.jpg",
+            "dragonfly-in-color-tattoo.jpg",
+            "heart-lotus-tattoo.jpg",
+            "moon-sun-tattoo.jpg",
+            "fine-line-tattoo-of-cupcake-in-rockland-county-ny.jpg",
+            "bubble-bee-tattoo.jpg",
+            "be-light-tattoo.jpeg",
+            "symbol-neck-tattoo.jpeg",
+            "bow-tattoo.jpeg",
+            "zodiac-tattoo.jpeg",
+            "panda-tattoo.jpg",
+            "lotus-on-chest-tattoo.jpeg",
+            "love-tat.jpg",
+            "infinity-heart-tattoo.png",
+            "777-fine-line-tattoo.jpg",
+            "duck-face-tattoo.jpeg",
+            "heart-finger-tattoo.jpeg",
+            "symbol-tattoo.jpeg",
+            "flower-ankle-tattoo.jpeg",
+            "dragonfly-toe-tattoo.jpg",
+            "glitter-butterfly-tattoo.png",
+          ].map((img, idx) => (
+            <img
+              key={idx}
+              src={`/images/${img}`}
+              alt={img.replace(/[-_]/g, " ").replace(/\..+$/, "")}
+              className={
+                styles.portfolioImg +
+                (idx === 0 ? " " + styles.flowerArmAdjust : "")
+              }
+            />
+          ))}
+        </div>
+      </section>
+
       {/* Footer with business info */}
       <footer className={styles.footer}>
         <div>Red Carpet Luxury Spa</div>
         <div>197 Main Street, Nanuet, NY</div>
         <div>Phone: 914-200-4121</div>
       </footer>
+      <ChatBot />
     </div>
   );
 }
