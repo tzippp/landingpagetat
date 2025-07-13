@@ -135,6 +135,37 @@ export default function ChatBot() {
       image: selectedImage 
     };
     const newMessages = [...messages, userMsg];
+    
+    // Save user message first
+    try {
+      await saveMessage(userMsg);
+      console.log("User message saved to database");
+    } catch (error) {
+      console.error("Error saving user message:", error);
+    }
+    
+    // Check if bot is paused by fetching latest chat data
+    try {
+      const response = await fetch(`/api/get-chat-detail?userId=${userId}`);
+      const data = await response.json();
+      
+      if (data.botPausedUntil) {
+        const pauseUntil = new Date(data.botPausedUntil);
+        const now = new Date();
+        
+        if (now < pauseUntil) {
+          // Bot is paused, don't send bot reply
+          setMessages([...newMessages]);
+          setInput("");
+          setSelectedImage(null);
+          return;
+        }
+      }
+    } catch (error) {
+      console.error("Error checking bot pause status:", error);
+    }
+    
+    // Bot is not paused, proceed with normal response
     let botReply = "";
     
     // Enhanced bot responses for images
@@ -160,13 +191,12 @@ export default function ChatBot() {
     setInput("");
     setSelectedImage(null);
     
-    // Save both messages to database
+    // Save bot message to database
     try {
-      await saveMessage(userMsg);
       await saveMessage({ from: "bot", text: botReply });
-      console.log("Both messages saved to database");
+      console.log("Bot message saved to database");
     } catch (error) {
-      console.error("Error saving messages:", error);
+      console.error("Error saving bot message:", error);
     }
   };
 

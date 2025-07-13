@@ -21,6 +21,7 @@ export default async function handler(req, res) {
     restore,
     restoreFromArchive,
     permanentDelete,
+    adminReply,
   } = req.body;
 
   // Enhanced data collection
@@ -126,30 +127,40 @@ export default async function handler(req, res) {
     // Try to find an existing chat session for this user
     const existing = await collection.findOne({ userId });
     if (existing) {
+      // If this is an admin reply, set bot pause for 30 minutes
+      let updateData = {
+        userName: userName || existing.userName,
+        email: email || existing.email,
+        phone: phone || existing.phone,
+        landingPage: landingPage || existing.landingPage,
+        landingPageVariant:
+          landingPageVariant || existing.landingPageVariant,
+        sourceType: sourceType || existing.sourceType,
+        utmSource: utmSource || existing.utmSource,
+        utmMedium: utmMedium || existing.utmMedium,
+        utmCampaign: utmCampaign || existing.utmCampaign,
+        utmContent: utmContent || existing.utmContent,
+        utmTerm: utmTerm || existing.utmTerm,
+        userAgent: userAgent || existing.userAgent,
+        referrer: referrer || existing.referrer,
+        ip: ip || existing.ip,
+        consent: true,
+        updatedAt: new Date(),
+      };
+
+      // If admin replied, set bot pause until 30 minutes from now
+      if (adminReply) {
+        const pauseUntil = new Date();
+        pauseUntil.setMinutes(pauseUntil.getMinutes() + 30);
+        updateData.botPausedUntil = pauseUntil;
+      }
+
       // Update the session: append message, update info if provided
       await collection.updateOne(
         { userId },
         {
           $push: { messages: { ...message, createdAt: new Date() } },
-          $set: {
-            userName: userName || existing.userName,
-            email: email || existing.email,
-            phone: phone || existing.phone,
-            landingPage: landingPage || existing.landingPage,
-            landingPageVariant:
-              landingPageVariant || existing.landingPageVariant,
-            sourceType: sourceType || existing.sourceType,
-            utmSource: utmSource || existing.utmSource,
-            utmMedium: utmMedium || existing.utmMedium,
-            utmCampaign: utmCampaign || existing.utmCampaign,
-            utmContent: utmContent || existing.utmContent,
-            utmTerm: utmTerm || existing.utmTerm,
-            userAgent: userAgent || existing.userAgent,
-            referrer: referrer || existing.referrer,
-            ip: ip || existing.ip,
-            consent: true,
-            updatedAt: new Date(),
-          },
+          $set: updateData,
         }
       );
     } else {

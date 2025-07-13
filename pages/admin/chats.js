@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 export async function getServerSideProps() {
   // Use absolute URL for SSR
-  const res = await fetch("http://localhost:3001/api/get-chats");
+  const res = await fetch("http://localhost:3000/api/get-chats");
   const data = await res.json();
   return { props: { initialChats: data.chats || [] } };
 }
@@ -197,6 +197,7 @@ export default function AdminChats({ initialChats }) {
         body: JSON.stringify({
           userId,
           message: { from: "admin", text: replyText, image: replyImage },
+          adminReply: true, // Flag to indicate admin reply
           consent: true,
         }),
       });
@@ -913,18 +914,62 @@ export default function AdminChats({ initialChats }) {
                               idx === chat.messages.length - 1
                                 ? "0.9rem"
                                 : "0.8rem",
+                            display: "flex",
+                            alignItems: "flex-start",
+                            gap: "8px",
                           }}
                         >
-                          <span style={{ fontWeight: "500" }}>
+                          <span style={{ fontWeight: "500", flexShrink: 0 }}>
                             {msg.from === "user"
                               ? "👤"
                               : msg.from === "admin"
                               ? "👤"
                               : "🤖"}
-                          </span>{" "}
-                          {msg.text.length > 60
-                            ? msg.text.slice(0, 60) + "..."
-                            : msg.text}
+                          </span>
+                          <div
+                            style={{
+                              flex: "1",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "4px",
+                            }}
+                          >
+                            {msg.image && (
+                              <img
+                                src={msg.image}
+                                alt="Shared image"
+                                style={{
+                                  maxWidth: "120px",
+                                  maxHeight: "80px",
+                                  borderRadius: "6px",
+                                  border: "1px solid rgba(0,0,0,0.1)",
+                                }}
+                              />
+                            )}
+                            {msg.text && (
+                              <span>
+                                {msg.text.length > 60
+                                  ? msg.text.slice(0, 60) + "..."
+                                  : msg.text}
+                              </span>
+                            )}
+                          </div>
+                          {msg.createdAt && (
+                            <div
+                              style={{
+                                fontSize: "0.7rem",
+                                color: "#999",
+                                whiteSpace: "nowrap",
+                                marginTop: "2px",
+                                flexShrink: 0,
+                              }}
+                            >
+                              {new Date(msg.createdAt).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -1093,89 +1138,6 @@ export default function AdminChats({ initialChats }) {
                       borderRadius: "8px",
                     }}
                   >
-                    {/* Quick Reply Buttons */}
-                    <div
-                      style={{
-                        marginBottom: "8px",
-                        display: "flex",
-                        gap: "4px",
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      <button
-                        onClick={() =>
-                          setReplyText(
-                            "Hi! Thanks for reaching out. How can I help you today?"
-                          )
-                        }
-                        style={{
-                          padding: "0.3rem 0.6rem",
-                          borderRadius: "4px",
-                          background: "#e6d3b3",
-                          color: "#400006",
-                          border: "1px solid #d1c0a0",
-                          cursor: "pointer",
-                          fontSize: "0.7rem",
-                        }}
-                      >
-                        👋 Greeting
-                      </button>
-                      <button
-                        onClick={() =>
-                          setReplyText(
-                            "Great question! Let me get back to you with more details."
-                          )
-                        }
-                        style={{
-                          padding: "0.3rem 0.6rem",
-                          borderRadius: "4px",
-                          background: "#e6d3b3",
-                          color: "#400006",
-                          border: "1px solid #d1c0a0",
-                          cursor: "pointer",
-                          fontSize: "0.7rem",
-                        }}
-                      >
-                        🤔 Follow up
-                      </button>
-                      <button
-                        onClick={() =>
-                          setReplyText(
-                            "Perfect! I'll send you our pricing and availability."
-                          )
-                        }
-                        style={{
-                          padding: "0.3rem 0.6rem",
-                          borderRadius: "4px",
-                          background: "#e6d3b3",
-                          color: "#400006",
-                          border: "1px solid #d1c0a0",
-                          cursor: "pointer",
-                          fontSize: "0.7rem",
-                        }}
-                      >
-                        💰 Pricing
-                      </button>
-                      <button
-                        onClick={() =>
-                          setReplyText(
-                            "Thanks! I'll schedule your appointment right away."
-                          )
-                        }
-                        style={{
-                          padding: "0.3rem 0.6rem",
-                          borderRadius: "4px",
-                          background: "#e6d3b3",
-                          color: "#400006",
-                          border: "1px solid #d1c0a0",
-                          cursor: "pointer",
-                          fontSize: "0.7rem",
-                        }}
-                      >
-                        📅 Book
-                      </button>
-                    </div>
-
                     {replyImage && (
                       <div
                         style={{
@@ -1218,7 +1180,7 @@ export default function AdminChats({ initialChats }) {
                     <textarea
                       value={replyText}
                       onChange={(e) => setReplyText(e.target.value)}
-                      placeholder="Type your reply or use quick replies above..."
+                      placeholder="Type your reply..."
                       style={{
                         width: "100%",
                         minHeight: "60px",
@@ -1256,7 +1218,7 @@ export default function AdminChats({ initialChats }) {
                           fontSize: "0.9rem",
                         }}
                       >
-                        💬 Send Reply
+                        💬 Send
                       </button>
                       <label
                         style={{
@@ -1295,15 +1257,6 @@ export default function AdminChats({ initialChats }) {
                       >
                         ❌ Cancel
                       </button>
-                      <span
-                        style={{
-                          fontSize: "0.8rem",
-                          color: "#666",
-                          marginLeft: "auto",
-                        }}
-                      >
-                        💡 Tip: Press Enter to send, Shift+Enter for new line
-                      </span>
                     </div>
                   </div>
                 )}
@@ -1432,28 +1385,55 @@ function ChatDetail({ userId }) {
                     cursor: msg.createdAt ? "pointer" : "default",
                   }}
                 >
-                  <div
-                    style={{
-                      fontSize: "0.75rem",
-                      opacity: 0.7,
-                      marginBottom: "4px",
-                    }}
-                  >
+                                  <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
+                  <span style={{ fontSize: "0.75rem", opacity: 0.7, flexShrink: 0 }}>
                     {msg.from === "bot"
-                      ? "🤖 Bot"
+                      ? "🤖"
                       : msg.from === "admin"
-                      ? "👤 Admin"
-                      : "👤 User"}
+                      ? "👤"
+                      : "👤"}
+                  </span>
+                  <div style={{ flex: "1" }}>
+                    {msg.image && (
+                      <div style={{ marginBottom: "8px" }}>
+                        <img
+                          src={msg.image}
+                          alt="Shared image"
+                          style={{
+                            maxWidth: "100%",
+                            maxHeight: "200px",
+                            borderRadius: "8px",
+                            border: "1px solid rgba(0,0,0,0.1)",
+                          }}
+                        />
+                      </div>
+                    )}
+                    <div
+                      style={{
+                        fontSize: "0.9rem",
+                        lineHeight: 1.4,
+                        wordBreak: "break-word",
+                      }}
+                    >
+                      {msg.text}
+                    </div>
                   </div>
-                  <div
-                    style={{
-                      fontSize: "0.9rem",
-                      lineHeight: 1.4,
-                      wordBreak: "break-word",
-                    }}
-                  >
-                    {msg.text}
-                  </div>
+                </div>
+                  {msg.createdAt && (
+                    <div
+                      style={{
+                        fontSize: "0.7rem",
+                        color: "#999",
+                        marginTop: "4px",
+                        textAlign: msg.from === "user" ? "left" : "right",
+                      }}
+                    >
+                      {new Date(msg.createdAt).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
